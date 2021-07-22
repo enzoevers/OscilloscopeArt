@@ -81,8 +81,8 @@ float dot(vector3<float> v1, vector3<float> v2);
 vector3<float> cross(vector3<float> v1, vector3<float> v2);
 vector3<float> scale(float s, vector3<float> v);
 vector3<float> add(vector3<float> v1, vector3<float> v2);
-vector3<int8_t> rotateVector(vector3<int8_t> vIn, vector3<int8_t> vRot, float angleDeg);
-vector2<int8_t> project2dTo3d(vector3<int8_t>, uint8_t distFromScreen);
+vector3<float> rotateVector(vector3<int8_t> vIn, vector3<int8_t> vRot, float angleDeg);
+vector2<float> project2dTo3d(vector3<int8_t>, uint8_t distFromScreen);
 
 // Internal clock frequency is 16MHz
 // Desired sampling frequency is 44.1KHz
@@ -134,13 +134,12 @@ void setup()
 
 
 
-  /*Serial.begin(9600);
-  vector3<int8_t> rotatedVector = rotateVector({1, 0, 1}, {0, 0, 1}, 90);
+  Serial.begin(9600);
+  vector3<float> rotatedVector = rotateVector({1, 0, 1}, {0, 0, 1}, 90);
   Serial.println();
   Serial.println(rotatedVector.x);
   Serial.println(rotatedVector.y);
   Serial.println(rotatedVector.z);
-*/
 }
 
 void loop()
@@ -369,9 +368,9 @@ vector3<float> scale(float s, vector3<float> v)
 {
   return
   {
-    s * v.z,
     s * v.x,
     s * v.y,
+    s * v.z,
   };
 }
 
@@ -385,8 +384,15 @@ vector3<float> add(vector3<float> v1, vector3<float> v2)
   };
 }
 
-vector3<int8_t> rotateVector(vector3<int8_t> vIn, vector3<int8_t> vRot, float angleDeg)
+vector3<float> rotateVector(vector3<int8_t> vIn, vector3<int8_t> vRot, float angleDeg)
 {
+  // https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
+    // Do the math
+    // u is the vector about rotation with xyz of the quaternion and v the vector to rotate
+    //vprime = 2.0f * dot(u, v) * u
+    //      + (s*s - dot(u, u)) * v
+    //      + 2.0f * s * cross(u, v);
+          
   const float halfAngle = angleDeg / 2;
   const float cosHalfAngle = cos(halfAngle * degToRadFactor);
   const float sinHalfAngle = sin(halfAngle * degToRadFactor);
@@ -413,52 +419,44 @@ vector3<int8_t> rotateVector(vector3<int8_t> vIn, vector3<int8_t> vRot, float an
   Serial.println(rotationVector.y);
   Serial.println(rotationVector.z);
 
-  vector3<float> vprime = add(
-                            add(
-                              scale(2.0 * dot(rotationVector, v), rotationVector), scale((cosHalfAngle * cosHalfAngle - dot(rotationVector, rotationVector)), v)
-                            )
-                            , scale(2.0 * cosHalfAngle, cross(rotationVector, v))
-                          );
+  float two_dot_rv = 2.0 * dot(rotationVector, v);
+  Serial.print("two_dot_rv: ");
+  Serial.println(two_dot_rv);
+  vector3<float> scale_r = scale(two_dot_rv, rotationVector);
+  Serial.print("scale_r: ");
+  Serial.println(scale_r.x);
+  Serial.println(scale_r.y);
+  Serial.println(scale_r.z);
 
-  vector3<int8_t> rotatedVector;
-  if (vprime.x > SCHAR_MAX)
-  {
-    rotatedVector.x = SCHAR_MAX;
-  }
-  else if (vprime.x < SCHAR_MIN)
-  {
-    rotatedVector.x = SCHAR_MIN;
-  }
-  else
-  {
-    rotatedVector.x = vprime.x;
-  }
+  float square_s_min_norm_r = cosHalfAngle*cosHalfAngle - dot(rotationVector, rotationVector);
+  Serial.print("square_s_min_norm_r: ");
+  Serial.println(square_s_min_norm_r);
+  vector3<float> scale_v = scale(square_s_min_norm_r, v);
+  Serial.print("scale_v: ");
+  Serial.println(scale_v.x);
+  Serial.println(scale_v.y);
+  Serial.println(scale_v.z);
 
-  if (vprime.y > SCHAR_MAX)
-  {
-    rotatedVector.y = SCHAR_MAX;
-  }
-  else if (vprime.y < SCHAR_MIN)
-  {
-    rotatedVector.y = SCHAR_MIN;
-  }
-  else
-  {
-    rotatedVector.y = vprime.y;
-  }
+  vector3<float> sum_scaledr_scaledv = add(scale_r, scale_v);
+  Serial.print("sum_scaledr_scaledv: ");
+  Serial.println(sum_scaledr_scaledv.x);
+  Serial.println(sum_scaledr_scaledv.y);
+  Serial.println(sum_scaledr_scaledv.z);
 
-  if (vprime.z > SCHAR_MAX)
-  {
-    rotatedVector.z = SCHAR_MAX;
-  }
-  else if (vprime.z < SCHAR_MIN)
-  {
-    rotatedVector.z = SCHAR_MIN;
-  }
-  else
-  {
-    rotatedVector.z = vprime.z;
-  }
+  vector3<float> cross_rv = cross(rotationVector, v);
+  Serial.print("cross_rv: ");
+  Serial.println(cross_rv.x);
+  Serial.println(cross_rv.y);
+  Serial.println(cross_rv.z);
+  vector3<float> scaled_cross_rv = scale(2.0 * cosHalfAngle, cross_rv);
+  Serial.print("scaled_cross_rv: ");
+  Serial.println(scaled_cross_rv.x);
+  Serial.println(scaled_cross_rv.y);
+  Serial.println(scaled_cross_rv.z);
+
+  vector3<float> sum_scaledr_scaledv_scaledCrossrv = add(sum_scaledr_scaledv, scaled_cross_rv);
+
+  return sum_scaledr_scaledv_scaledCrossrv;
 }
 
 /*
