@@ -26,7 +26,7 @@
 // which is almost the desired 44.1KHz.
 const uint16_t fs = 44077;
 
-const uint8_t bufferSize = 128;
+const uint8_t bufferSize = 363;
 uint8_t outputCircularBufferIndex = 0;
 vector2 outputCircularBuffer[bufferSize] = {};
 

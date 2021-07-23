@@ -18,7 +18,7 @@
 //--------------------
 long int startMilis = 0;
 
-
+/*
 typedef struct
 {
   uint32_t frequency;
@@ -32,10 +32,10 @@ ToneData tone550hz = ToneData{550, 0.5, 0};
 ToneData tone800hz = ToneData{800, 0.5, 0};
 ToneData tone1000hz = ToneData{1000, 0.7, 0};
 ToneData tone1hz = ToneData{1, 0.7, 0};
+*/
 
-
-void addSampleToBuffer(vector2 coordinateSample);
 float interpolate(float x1, float y1, float x2, float y2, float x);
+/*
 void testSquare();
 void circleStatic();
 void circleRotateInX();
@@ -45,6 +45,7 @@ void squareOfLength(float sideLength);
 void pulsingSquare();
 float pitchCos(uint32_t frequency, int32_t degree, float amplitude, float phase);
 void playTones(ToneData* tones, uint8_t toneCount, float duration_s);
+*/
 
 // https://nl.mathworks.com/help/aerotbx/ug/quatrotate.html
 // https://eater.net/quaternions
@@ -70,38 +71,40 @@ void setup()
 }
 
 void loop()
-{ /*
-    for (uint8_t i = 0; i < 3; i++)
-    {
-     pulsingSquare();
-    }
+{
+  /*
+  for (uint8_t i = 0; i < 3; i++)
+  {
+    pulsingSquare();
+  }
 
-    for (uint8_t i = 0; i < 1; i++)
-    {
-     circleRotateInX();
-     circleRotateInY();
-    }
+  for (uint8_t i = 0; i < 1; i++)
+  {
+    circleRotateInX();
+    circleRotateInY();
+  }
+  */
+  
+  /*
+      for (uint32_t p = 50; p < 10000; p += 50)
+      {
+       ToneData tonep = ToneData{p, 0.3, 0};
+       ToneData tones[] = {tonep};
+       playTones(tones, ARRAYLENGTH(tones), 0.001);
+      }
 
-
-    for (uint32_t p = 50; p < 10000; p += 50)
-    {
-     ToneData tonep = ToneData{p, 0.3, 0};
-     ToneData tones[] = {tonep};
-     playTones(tones, ARRAYLENGTH(tones), 0.001);
-    }
-
-    ToneData tones2[] = {tone1000hz};
-    playTones(tones2, ARRAYLENGTH(tones2), 0.1);
+      ToneData tones2[] = {tone1000hz};
+      playTones(tones2, ARRAYLENGTH(tones2), 0.1);
   */
 }
-
+/*
 void testSquare()
 {
   for (uint8_t y = 0; y < tapsCountY; y++)
   {
     for (uint8_t x = 0; x < tapsCountX; x++)
     {
-      drawXY(vector2{(float)x / tapsCountX, (float)y / tapsCountY});
+      addSample(vector2{(float)x / tapsCountX, (float)y / tapsCountY});
       delay(1);
     }
   }
@@ -111,7 +114,7 @@ void circleStatic()
 {
   for (float d = 0; d < 360; d++)
   {
-    drawXY(vector2{0.5 + (0.4 * cos(d * degToRadFactor)), 0.5 + (0.4 * sin(d * degToRadFactor))});
+    addSample(vector2{0.5 + (0.4 * cos(d * degToRadFactor)), 0.5 + (0.4 * sin(d * degToRadFactor))});
     delay(1);
   }
 }
@@ -122,7 +125,7 @@ void circleRotateInX()
   {
     for (float d = 0; d < 360; d += 6)
     {
-      drawXY(vector2{0.5 + (0.45 * cos(d * degToRadFactor)), 0.5 + (cos(r * degToRadFactor) * 0.4 * sin(d * degToRadFactor))});
+      addSample(vector2{0.5 + (0.45 * cos(d * degToRadFactor)), 0.5 + (cos(r * degToRadFactor) * 0.4 * sin(d * degToRadFactor))});
     }
     //delayMicroseconds(1);
   }
@@ -134,7 +137,7 @@ void circleRotateInY()
   {
     for (float d = 0; d < 360; d += 6)
     {
-      drawXY(vector2{0.5 + (cos(r * degToRadFactor) * 0.4 * cos(d * degToRadFactor)), 0.5 + (0.4 * sin(d * degToRadFactor))});
+      addSample(vector2{0.5 + (cos(r * degToRadFactor) * 0.4 * cos(d * degToRadFactor)), 0.5 + (0.4 * sin(d * degToRadFactor))});
     }
     //delayMicroseconds(1);
   }
@@ -146,7 +149,7 @@ void circleRotateInXY()
   {
     for (float d = 0; d < 360; d += 4)
     {
-      drawXY(vector2{0.5 + (0.4 * cos(d * degToRadFactor)), 0.5 + (0.4 * sin((d + r)*degToRadFactor))});
+      addSample(vector2{0.5 + (0.4 * cos(d * degToRadFactor)), 0.5 + (0.4 * sin((d + r)*degToRadFactor))});
     }
     delayMicroseconds(10);
   }
@@ -161,40 +164,40 @@ void squareOfLength(float sideLength)
 
   uint8_t interpolationCount = 31;
 
-  drawXY(vector2{c[0][0], c[0][1]});
+  addSample(vector2{c[0][0], c[0][1]});
   float stepSize = (c[1][0] - c[0][0]) / (interpolationCount + 1);
   float newX = c[0][0] + stepSize;
   for (uint8_t p = 0; p < interpolationCount; p++)
   {
     newX += stepSize;
-    drawXY(vector2{newX, interpolate(c[0][0], c[0][1], c[1][0], c[1][1], newX)});
+    addSample(vector2{newX, interpolate(c[0][0], c[0][1], c[1][0], c[1][1], newX)});
   }
 
-  drawXY(vector2{c[1][0], c[1][1]});
+  addSample(vector2{c[1][0], c[1][1]});
   stepSize = (c[3][1] - c[1][1]) / (interpolationCount + 1);
   float newY = c[1][1] + stepSize;
   for (uint8_t p = 0; p < interpolationCount; p++)
   {
     newY += stepSize;
-    drawXY(vector2{interpolate(c[1][1], c[1][0], c[3][1], c[3][0], newY), newY});
+    addSample(vector2{interpolate(c[1][1], c[1][0], c[3][1], c[3][0], newY), newY});
   }
 
-  drawXY(vector2{c[3][0], c[3][1]});
+  addSample(vector2{c[3][0], c[3][1]});
   stepSize = (c[2][0] - c[3][0]) / (interpolationCount + 1);
   newX = c[3][0] + stepSize;
   for (uint8_t p = 0; p < interpolationCount; p++)
   {
     newX += stepSize;
-    drawXY(vector2{newX, interpolate(c[3][0], c[3][1], c[2][0], c[2][1], newX)});
+    addSample(vector2{newX, interpolate(c[3][0], c[3][1], c[2][0], c[2][1], newX)});
   }
 
-  drawXY(vector2{c[2][0], c[2][1]});
+  addSample(vector2{c[2][0], c[2][1]});
   stepSize = (c[0][1] - c[2][1]) / (interpolationCount + 1);
   newY = c[2][1] + stepSize;
   for (uint8_t p = 0; p < interpolationCount; p++)
   {
     newY += stepSize;
-    drawXY(vector2{interpolate(c[2][1], c[2][0], c[0][1], c[0][0], newY), newY});
+    addSample(vector2{interpolate(c[2][1], c[2][0], c[0][1], c[0][0], newY), newY});
   }
 }
 
@@ -237,9 +240,10 @@ void playTones(ToneData* tones, uint8_t toneCount, float duration_s)
     {
       combinedTone += 0.5 + (0.5 * tones[i].amplitude * cos((2.0 * M_PI * ((float)tones[i].frequency / fs) * s) - (tones[i].phase * degToRadFactor)));
     }
-    drawXY(vector2{combinedTone, combinedTone});
+    addSample(vector2{combinedTone, combinedTone});
   }
 }
+*/
 
 // Return the y value for position x interpolated between (x1,y1) and (x2,y2)
 float interpolate(float x1, float y1, float x2, float y2, float x)
