@@ -11,6 +11,7 @@
 //--------------------
 #include "Util.h"
 #include "DrawIoControl.h"
+#include "CircularBuffer.h"
 
 //--------------------
 // Variables/constants
@@ -26,21 +27,19 @@
 // which is almost the desired 44.1KHz.
 const uint16_t fs = 44077;
 
-const uint8_t bufferSize = 363;
-uint8_t outputCircularBufferIndex = 0;
-vector2 outputCircularBuffer[bufferSize] = {};
+const uint16_t bufferSize = 363;
+volatile circularBuffer<vector2> outputBuffer(bufferSize);
 
 //--------------------
 // ISR
 //--------------------
 ISR(TIMER1_COMPA_vect)
 {
-  vector2 curCoor = 
+  vector2 curCoor;
+  if (outputBuffer.dequeue(curCoor))
   {
-    outputCircularBuffer[outputCircularBufferIndex].x,
-    outputCircularBuffer[outputCircularBufferIndex].y
-  };
-  drawXY(curCoor);
+    drawXY(curCoor);
+  }
 }
 
 //--------------------
@@ -63,13 +62,11 @@ void setupTimer()
   sei(); // Enable interrupts
 }
 
-void addSample(vector2 newSample)
+bool addSample(vector2 newSample)
 {
-  outputCircularBuffer[outputCircularBufferIndex] = newSample;
-  
-  outputCircularBufferIndex++;
-  if(outputCircularBufferIndex >= bufferSize)
-  {
-    outputCircularBufferIndex = 0;
-  }
+  Serial.println(outputBuffer.getMaxSize());
+  Serial.println(outputBuffer.getSize());
+  return outputBuffer.enqueue(newSample);
+  Serial.println(outputBuffer.getSize());
+  Serial.println();
 }

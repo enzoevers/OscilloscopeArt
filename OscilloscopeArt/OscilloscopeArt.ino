@@ -18,7 +18,7 @@
 //--------------------
 long int startMilis = 0;
 
-/*
+
 typedef struct
 {
   uint32_t frequency;
@@ -32,10 +32,10 @@ ToneData tone550hz = ToneData{550, 0.5, 0};
 ToneData tone800hz = ToneData{800, 0.5, 0};
 ToneData tone1000hz = ToneData{1000, 0.7, 0};
 ToneData tone1hz = ToneData{1, 0.7, 0};
-*/
+
 
 float interpolate(float x1, float y1, float x2, float y2, float x);
-/*
+
 void testSquare();
 void circleStatic();
 void circleRotateInX();
@@ -45,7 +45,7 @@ void squareOfLength(float sideLength);
 void pulsingSquare();
 float pitchCos(uint32_t frequency, int32_t degree, float amplitude, float phase);
 void playTones(ToneData* tones, uint8_t toneCount, float duration_s);
-*/
+
 
 // https://nl.mathworks.com/help/aerotbx/ug/quatrotate.html
 // https://eater.net/quaternions
@@ -72,20 +72,39 @@ void setup()
 
 void loop()
 {
-  /*
-  for (uint8_t i = 0; i < 3; i++)
+  for (int y = 0; y < 100; y++)
   {
-    pulsingSquare();
+    for (int x = 0; x < 100; )
+    {
+      vector2 myVector = 
+      {
+        (float)x / 100.0,
+        (float)y / 100.0
+      };
+      Serial.println(myVector.x);
+      Serial.println(myVector.y);
+      bool ret = addSample(myVector);
+      //Serial.println(ret);
+      if (ret)
+      {
+        x++;
+      }
+    }
   }
+  /*
+    for (uint8_t i = 0; i < 3; i++)
+    {
+    pulsingSquare();
+    }
 
-  for (uint8_t i = 0; i < 1; i++)
-  {
+    for (uint8_t i = 0; i < 1; i++)
+    {
     circleRotateInX();
     circleRotateInY();
-  }
-  */
-  
-  /*
+    }
+
+
+
       for (uint32_t p = 50; p < 10000; p += 50)
       {
        ToneData tonep = ToneData{p, 0.3, 0};
@@ -97,7 +116,7 @@ void loop()
       playTones(tones2, ARRAYLENGTH(tones2), 0.1);
   */
 }
-/*
+
 void testSquare()
 {
   for (uint8_t y = 0; y < tapsCountY; y++)
@@ -243,7 +262,7 @@ void playTones(ToneData* tones, uint8_t toneCount, float duration_s)
     addSample(vector2{combinedTone, combinedTone});
   }
 }
-*/
+
 
 // Return the y value for position x interpolated between (x1,y1) and (x2,y2)
 float interpolate(float x1, float y1, float x2, float y2, float x)

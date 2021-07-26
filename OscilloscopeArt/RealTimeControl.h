@@ -10,6 +10,6 @@
 // Function declerations
 //--------------------
 void setupTimer();
-void addSample(vector2 newSample);
+bool addSample(vector2 newSample);
 
 #endif /* REAL_TIME_CONTROL_H */
