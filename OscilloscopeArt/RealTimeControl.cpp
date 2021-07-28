@@ -16,7 +16,6 @@
 //--------------------
 // Variables/constants
 //--------------------
-
 // Internal clock frequency is 16MHz
 // Desired sampling frequency is 44.1KHz
 //
@@ -25,7 +24,7 @@
 // 16,000,000/363 ~= 44,077Hz = 44.077KHz
 // So counting 363 cycles from the internal clock results in 44.077KHz
 // which is almost the desired 44.1KHz.
-const uint16_t fs = 44077;
+const uint16_t FS = 44077;
 
 const uint16_t bufferSize = 64;
 volatile circularBuffer<vector2> outputBuffer(bufferSize);

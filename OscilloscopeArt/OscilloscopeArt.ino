@@ -44,7 +44,7 @@ void circleRotateInXY();
 void squareOfLength(float sideLength);
 void pulsingSquare();
 float pitchCos(uint32_t frequency, int32_t degree, float amplitude, float phase);
-void playTones(ToneData* tones, uint8_t toneCount, float duration_s);
+bool playTones(uint32_t fs, ToneData* tones, uint8_t toneCount, float duration_s);
 
 
 // https://nl.mathworks.com/help/aerotbx/ug/quatrotate.html
@@ -57,11 +57,13 @@ vector3 add(vector3 v1, vector3 v2);
 vector3 rotateVector(vector3 vIn, vector3 vRot, float angleDeg);
 vector2 project2dTo3d(vector3, float distFromScreen);
 
+vector2 oneSecondGeneralBuffer[128];
+
 void setup()
 {
   setupTimer();
   setupIO();
-
+  
   Serial.begin(115200);
   vector3 rotatedVector = rotateVector({1, 0, 1}, {0, 0, 1}, 90);
   Serial.println();
@@ -71,27 +73,28 @@ void setup()
 }
 
 void loop()
-{
-  for (int y = 0; y < 100; y++)
-  {
-    for (int x = 0; x < 100; )
+{ /*
+    for (int y = 0; y < 100; y++)
     {
-      vector2 myVector =
-      {
-        (float)x / 100.0,
-        (float)y / 100.0
-      };
-      
-      bool ret = addSample(myVector);
+     for (int x = 0; x < 100; )
+     {
+       vector2 myVector =
+       {
+         (float)x / 100.0,
+         (float)y / 100.0
+       };
 
-      if (ret)
-      {
-        x++;
-      }
-      
-      delay(10);
+       bool ret = addSample(myVector);
+
+       if (ret)
+       {
+         x++;
+       }
+
+       delay(10);
+     }
     }
-  }
+  */
   /*
     for (uint8_t i = 0; i < 3; i++)
     {
@@ -103,19 +106,17 @@ void loop()
     circleRotateInX();
     circleRotateInY();
     }
-
-
-
-      for (uint32_t p = 50; p < 10000; p += 50)
-      {
-       ToneData tonep = ToneData{p, 0.3, 0};
-       ToneData tones[] = {tonep};
-       playTones(tones, ARRAYLENGTH(tones), 0.001);
-      }
-
-      ToneData tones2[] = {tone1000hz};
-      playTones(tones2, ARRAYLENGTH(tones2), 0.1);
   */
+  /*
+        for (uint32_t p = 50; p < 10000; p += 50)
+        {
+         ToneData tonep = ToneData{p, 0.3, 0};
+         ToneData tones[] = {tonep};
+         playTones(tones, ARRAYLENGTH(tones), 0.001);
+        }
+  */
+  ToneData tones2[] = {tone1000hz};
+  playTones(FS, tones2, ARRAYLENGTH(tones2), 0.002);
 }
 
 void testSquare()
@@ -125,7 +126,7 @@ void testSquare()
     for (uint8_t x = 0; x < tapsCountX; x++)
     {
       addSample(vector2{(float)x / tapsCountX, (float)y / tapsCountY});
-      delay(1);
+      delay(10);
     }
   }
 }
@@ -245,9 +246,12 @@ float pitchCos(uint32_t frequency, int32_t degree, float amplitude, float phase)
   return 0.5 + (0.5 * (amplitude * cos(frequency * (((((float)degree / 1000) / frequency) - phase) * degToRadFactor))));
 }
 
-void playTones(ToneData* tones, uint8_t toneCount, float duration_s)
+bool playTones(uint32_t fs, ToneData* tones, uint8_t toneCount, float duration_s)
 {
-  static const uint32_t fs = 44100;
+  if (duration_s*fs > 128)
+  {
+    return false;
+  }
 
   float combinedTone = 0;
 
@@ -260,8 +264,32 @@ void playTones(ToneData* tones, uint8_t toneCount, float duration_s)
     {
       combinedTone += 0.5 + (0.5 * tones[i].amplitude * cos((2.0 * M_PI * ((float)tones[i].frequency / fs) * s) - (tones[i].phase * degToRadFactor)));
     }
-    addSample(vector2{combinedTone, combinedTone});
+
+    if (combinedTone > 1)
+    {
+      combinedTone = 1;
+    }
+    else if (combinedTone < 0)
+    {
+      combinedTone = 0;
+    }
+    
+    //addSample(vector2{combinedTone, combinedTone});
+    oneSecondGeneralBuffer[s] = {combinedTone, combinedTone};
   }
+
+  Serial.println(sampleCount);
+
+  for (uint32_t i = 0; i < sampleCount; i++)
+  {
+    bool ret = addSample(oneSecondGeneralBuffer[i]);
+    while (!ret) 
+    {
+      ret = addSample(oneSecondGeneralBuffer[i]);
+    }
+  }
+
+  return true;
 }
 
 
