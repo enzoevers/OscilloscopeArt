@@ -19,8 +19,8 @@ void setupIO()
 
 void drawXY(vector2 coordinateSample)
 {
-  uint8_t xInt = coordinateSample.x + (tapsCountX/2);
-  uint8_t yInt = tapsCountY - coordinateSample.y - (tapsCountY/2); // On the oscilloscope Y starts at the bottom.
+  uint8_t xInt = coordinateSample.x * (tapsCountX-1);
+  uint8_t yInt = (tapsCountY-1) * (1 - coordinateSample.y); // On the oscilloscope Y starts at the bottom.
   // So to make top-left (0,0) start from the maximum.
 
   Px = xInt;

@@ -62,7 +62,7 @@ void setup()
   setupTimer();
   setupIO();
 
-  Serial.begin(9600);
+  Serial.begin(115200);
   vector3 rotatedVector = rotateVector({1, 0, 1}, {0, 0, 1}, 90);
   Serial.println();
   Serial.println(rotatedVector.x);
@@ -76,19 +76,20 @@ void loop()
   {
     for (int x = 0; x < 100; )
     {
-      vector2 myVector = 
+      vector2 myVector =
       {
         (float)x / 100.0,
         (float)y / 100.0
       };
-      Serial.println(myVector.x);
-      Serial.println(myVector.y);
+      
       bool ret = addSample(myVector);
-      //Serial.println(ret);
+
       if (ret)
       {
         x++;
       }
+      
+      delay(10);
     }
   }
   /*

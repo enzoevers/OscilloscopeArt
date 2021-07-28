@@ -27,7 +27,7 @@
 // which is almost the desired 44.1KHz.
 const uint16_t fs = 44077;
 
-const uint16_t bufferSize = 363;
+const uint16_t bufferSize = 64;
 volatile circularBuffer<vector2> outputBuffer(bufferSize);
 
 //--------------------
@@ -36,7 +36,8 @@ volatile circularBuffer<vector2> outputBuffer(bufferSize);
 ISR(TIMER1_COMPA_vect)
 {
   vector2 curCoor;
-  if (outputBuffer.dequeue(curCoor))
+  bool ret = outputBuffer.dequeue(curCoor);
+  if (ret)
   {
     drawXY(curCoor);
   }
@@ -64,9 +65,6 @@ void setupTimer()
 
 bool addSample(vector2 newSample)
 {
-  Serial.println(outputBuffer.getMaxSize());
-  Serial.println(outputBuffer.getSize());
-  return outputBuffer.enqueue(newSample);
-  Serial.println(outputBuffer.getSize());
-  Serial.println();
+  bool ret = outputBuffer.enqueue(newSample);
+  return ret;
 }
