@@ -262,7 +262,9 @@ bool playTones(uint32_t fs, ToneData* tones, uint8_t toneCount, float duration_s
     combinedTone = 0;
     for (uint8_t i = 0; i < toneCount; i++)
     {
-      combinedTone += 0.5 + (0.5 * tones[i].amplitude * cos((2.0 * M_PI * ((float)tones[i].frequency / fs) * s) - (tones[i].phase * degToRadFactor)));
+      double period = 1.0/fs;
+      double frequencyRadians = 2.0 * M_PI * (float)tones[i].frequency;
+      combinedTone += 0.5 + (0.5 * tones[i].amplitude * cos(frequencyRadians * period * s - (tones[i].phase * degToRadFactor)));
     }
 
     if (combinedTone > 1)
@@ -277,8 +279,6 @@ bool playTones(uint32_t fs, ToneData* tones, uint8_t toneCount, float duration_s
     //addSample(vector2{combinedTone, combinedTone});
     oneSecondGeneralBuffer[s] = {combinedTone, combinedTone};
   }
-
-  Serial.println(sampleCount);
 
   for (uint32_t i = 0; i < sampleCount; i++)
   {
