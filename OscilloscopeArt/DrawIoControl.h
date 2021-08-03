@@ -26,5 +26,6 @@
 //--------------------
 void setupIO();
 void drawXY(vector2 coordinateSample);
+vector2 scaleToCoordinates(vector2 scaler);
 
 #endif /* DRAW_IO_CONTROL_H */

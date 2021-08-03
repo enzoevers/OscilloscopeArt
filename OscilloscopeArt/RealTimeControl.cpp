@@ -24,10 +24,10 @@
 // 16,000,000/363 ~= 44,077Hz = 44.077KHz
 // So counting 363 cycles from the internal clock results in 44.077KHz
 // which is almost the desired 44.1KHz.
-const uint16_t FS = 44077;
+//const uint16_t FS = 44077;
 
-const uint16_t bufferSize = 64;
-volatile circularBuffer<vector2> outputBuffer(bufferSize);
+//const uint16_t bufferSize = 64;
+volatile circularBuffer<vector2> outputBuffer(RT_bufferSize);
 
 //--------------------
 // ISR
@@ -62,8 +62,28 @@ void setupTimer()
   sei(); // Enable interrupts
 }
 
+void clearOutputBuffer()
+{
+  outputBuffer.clearBuffer();
+}
+
 bool addSample(vector2 newSample)
 {
   bool ret = outputBuffer.enqueue(newSample);
   return ret;
+}
+
+void disableOutput()
+{
+  cli(); // Disable interrupts
+  TIMSK1 UNSET (1 << OCIE1A); // Disaable overflow interrupt
+  sei(); // Enable interrupts
+}
+
+void enableOutput()
+{
+  //cli(); // Disable interrupts
+  //TIMSK1 SET (1 << OCIE1A); // Enable overflow interrupt
+  //sei(); // Enable interrupts
+  setupTimer();
 }

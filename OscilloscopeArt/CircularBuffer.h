@@ -47,6 +47,12 @@ class circularBuffer
       return true;
     }
 
+    void clearBuffer() volatile
+    {
+      _write = 0;
+      _read = 0;
+    }
+
     bool isEmpty() volatile 
     {
       return _curBufferSize == 0;

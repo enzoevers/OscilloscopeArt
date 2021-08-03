@@ -44,7 +44,7 @@ void circleRotateInXY();
 void squareOfLength(float sideLength);
 void pulsingSquare();
 float pitchCos(uint32_t frequency, int32_t degree, float amplitude, float phase);
-bool playTones(uint32_t fs, ToneData* tones, uint8_t toneCount, float duration_s);
+bool playTonesOnePeriod(uint32_t fs, ToneData* tones, uint8_t toneCount);
 
 
 // https://nl.mathworks.com/help/aerotbx/ug/quatrotate.html
@@ -57,13 +57,14 @@ vector3 add(vector3 v1, vector3 v2);
 vector3 rotateVector(vector3 vIn, vector3 vRot, float angleDeg);
 vector2 project2dTo3d(vector3, float distFromScreen);
 
-vector2 oneSecondGeneralBuffer[128];
+#define RT_local_bufferSize 64
+vector2 generalBuffer[RT_local_bufferSize];
 
 void setup()
 {
   setupTimer();
   setupIO();
-  
+
   Serial.begin(115200);
   vector3 rotatedVector = rotateVector({1, 0, 1}, {0, 0, 1}, 90);
   Serial.println();
@@ -116,7 +117,7 @@ void loop()
         }
   */
   ToneData tones2[] = {tone1000hz};
-  playTones(FS, tones2, ARRAYLENGTH(tones2), 0.002);
+  playTonesOnePeriod(FS, tones2, ARRAYLENGTH(tones2));
 }
 
 void testSquare()
@@ -246,23 +247,31 @@ float pitchCos(uint32_t frequency, int32_t degree, float amplitude, float phase)
   return 0.5 + (0.5 * (amplitude * cos(frequency * (((((float)degree / 1000) / frequency) - phase) * degToRadFactor))));
 }
 
-bool playTones(uint32_t fs, ToneData* tones, uint8_t toneCount, float duration_s)
+bool playTonesOnePeriod(uint32_t fs, ToneData* tones, uint8_t toneCount)
 {
-  if (duration_s*fs > 128)
+  uint32_t smalledPeriod = tones[0].frequency;
+
+  for (uint8_t i = 1; i < toneCount; i++)
+  {
+    smalledPeriod = lcm(smalledPeriod, tones[i].frequency);
+  }
+
+  const uint32_t sampleCount = ceil((double)fs / smalledPeriod);
+  //Serial.println(sampleCount);
+
+  if (sampleCount > RT_local_bufferSize)
   {
     return false;
   }
 
   float combinedTone = 0;
 
-  const uint32_t sampleCount = fs * duration_s;
-
   for (uint32_t s = 0; s < sampleCount; s++)
   {
     combinedTone = 0;
     for (uint8_t i = 0; i < toneCount; i++)
     {
-      double period = 1.0/fs;
+      double period = 1.0 / fs;
       double frequencyRadians = 2.0 * M_PI * (float)tones[i].frequency;
       combinedTone += 0.5 + (0.5 * tones[i].amplitude * cos(frequencyRadians * period * s - (tones[i].phase * degToRadFactor)));
     }
@@ -275,19 +284,19 @@ bool playTones(uint32_t fs, ToneData* tones, uint8_t toneCount, float duration_s
     {
       combinedTone = 0;
     }
-    
+
     //addSample(vector2{combinedTone, combinedTone});
-    oneSecondGeneralBuffer[s] = {combinedTone, combinedTone};
+    generalBuffer[s] = scaleToCoordinates(vector2{combinedTone, combinedTone});
   }
 
+  clearOutputBuffer();
+  disableOutput();
   for (uint32_t i = 0; i < sampleCount; i++)
   {
-    bool ret = addSample(oneSecondGeneralBuffer[i]);
-    while (!ret) 
-    {
-      ret = addSample(oneSecondGeneralBuffer[i]);
-    }
+    /*bool ret = */addSample(generalBuffer[i]);
+    //Serial.println(generalBuffer[i].x);
   }
+  enableOutput();
 
   return true;
 }
