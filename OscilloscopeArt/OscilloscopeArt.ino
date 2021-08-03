@@ -26,10 +26,12 @@ typedef struct
   float phase;
 } ToneData;
 
-ToneData tone220hz = ToneData{220, 0.2, 0};
-ToneData tone440hz = ToneData{440, 0.3, 0};
-ToneData tone550hz = ToneData{550, 0.5, 0};
-ToneData tone800hz = ToneData{800, 0.5, 0};
+ToneData tone200hz = ToneData{200, 0.7, 0};
+ToneData tone220hz = ToneData{220, 0.7, 0};
+ToneData tone440hz = ToneData{440, 0.7, 0};
+ToneData tone550hz = ToneData{550, 0.7, 0};
+ToneData tone800hz = ToneData{800, 0.7, 0};
+ToneData tone300hz = ToneData{300, 0.7, 0};
 ToneData tone1000hz = ToneData{1000, 0.7, 0};
 ToneData tone1hz = ToneData{1, 0.7, 0};
 
@@ -57,8 +59,8 @@ vector3 add(vector3 v1, vector3 v2);
 vector3 rotateVector(vector3 vIn, vector3 vRot, float angleDeg);
 vector2 project2dTo3d(vector3, float distFromScreen);
 
-#define RT_local_bufferSize 64
-vector2 generalBuffer[RT_local_bufferSize];
+//#define RT_local_bufferSize 96
+//vector2 generalBuffer[RT_local_bufferSize];
 
 void setup()
 {
@@ -116,7 +118,8 @@ void loop()
          playTones(tones, ARRAYLENGTH(tones), 0.001);
         }
   */
-  ToneData tones2[] = {tone1000hz};
+  //ToneData tones2[] = {tone200hz, tone300hz};
+  ToneData tones2[] = {tone800hz};
   playTonesOnePeriod(FS, tones2, ARRAYLENGTH(tones2));
 }
 
@@ -249,23 +252,28 @@ float pitchCos(uint32_t frequency, int32_t degree, float amplitude, float phase)
 
 bool playTonesOnePeriod(uint32_t fs, ToneData* tones, uint8_t toneCount)
 {
-  uint32_t smalledPeriod = tones[0].frequency;
+  uint32_t gcdFrequencies = tones[0].frequency;
 
   for (uint8_t i = 1; i < toneCount; i++)
   {
-    smalledPeriod = lcm(smalledPeriod, tones[i].frequency);
+    gcdFrequencies = gcd(gcdFrequencies, tones[i].frequency);
   }
 
-  const uint32_t sampleCount = ceil((double)fs / smalledPeriod);
-  //Serial.println(sampleCount);
+  Serial.println(gcdFrequencies);
+  //Serial.println();
 
-  if (sampleCount > RT_local_bufferSize)
+  const uint32_t sampleCount = ceil((double)fs / gcdFrequencies);
+  Serial.println(sampleCount);
+
+  if (sampleCount > (uint32_t)RT_bufferSize)
   {
     return false;
   }
 
   float combinedTone = 0;
 
+  disableOutput();
+  clearOutputBuffer();
   for (uint32_t s = 0; s < sampleCount; s++)
   {
     combinedTone = 0;
@@ -273,8 +281,15 @@ bool playTonesOnePeriod(uint32_t fs, ToneData* tones, uint8_t toneCount)
     {
       double period = 1.0 / fs;
       double frequencyRadians = 2.0 * M_PI * (float)tones[i].frequency;
-      combinedTone += 0.5 + (0.5 * tones[i].amplitude * cos(frequencyRadians * period * s - (tones[i].phase * degToRadFactor)));
+      double newTone = 0.5 + (0.5 * tones[i].amplitude * cos(frequencyRadians * period * s - (tones[i].phase * degToRadFactor)));
+      combinedTone += newTone;
+      Serial.println(newTone);
+      Serial.println(combinedTone);
+      Serial.println();
     }
+    combinedTone /= toneCount;
+    Serial.println(combinedTone);
+    Serial.println();
 
     if (combinedTone > 1)
     {
@@ -286,17 +301,22 @@ bool playTonesOnePeriod(uint32_t fs, ToneData* tones, uint8_t toneCount)
     }
 
     //addSample(vector2{combinedTone, combinedTone});
-    generalBuffer[s] = scaleToCoordinates(vector2{combinedTone, combinedTone});
-  }
-
-  clearOutputBuffer();
-  disableOutput();
-  for (uint32_t i = 0; i < sampleCount; i++)
-  {
-    /*bool ret = */addSample(generalBuffer[i]);
-    //Serial.println(generalBuffer[i].x);
+    //generalBuffer[s] = scaleToCoordinates(vector2{combinedTone, combinedTone});
+    addSample(scaleToCoordinates(vector2{combinedTone, combinedTone}));
+    //Serial.println(combinedTone);
   }
   enableOutput();
+
+  /*
+    disableOutput();
+    clearOutputBuffer();
+    for (uint32_t i = 0; i < sampleCount; i++)
+    {
+    addSample(generalBuffer[i]);
+    //Serial.println(generalBuffer[i].x);
+    }
+    enableOutput();
+  */
 
   return true;
 }

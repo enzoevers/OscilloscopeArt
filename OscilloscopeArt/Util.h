@@ -19,5 +19,6 @@
 // Functions
 //--------------------
 uint32_t lcm(uint32_t n1, uint32_t n2);
+uint32_t gcd(uint32_t n1, uint32_t n2);
 
 #endif /* UTIL_H */

@@ -82,8 +82,7 @@ void disableOutput()
 
 void enableOutput()
 {
-  //cli(); // Disable interrupts
-  //TIMSK1 SET (1 << OCIE1A); // Enable overflow interrupt
-  //sei(); // Enable interrupts
-  setupTimer();
+  cli(); // Disable interrupts
+  TIMSK1 SET (1 << OCIE1A); // Enable overflow interrupt
+  sei(); // Enable interrupts
 }

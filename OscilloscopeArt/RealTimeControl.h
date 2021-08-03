@@ -23,7 +23,7 @@
 // So counting 363 cycles from the internal clock results in 44.077KHz
 // which is almost the desired 44.1KHz.
 #define FS 44077
-#define RT_bufferSize 64
+#define RT_bufferSize 128
 
 
 //--------------------
