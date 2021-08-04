@@ -47,6 +47,7 @@ ISR(TIMER1_COMPA_vect)
 //--------------------
 void setupTimer()
 {
+  // https://ww1.microchip.com/downloads/en/DeviceDoc/ATmega48A-PA-88A-PA-168A-PA-328-P-DS-DS40002061B.pdf
   cli(); // Disable interrupts
 
   // Set Timer 1 to mode 4

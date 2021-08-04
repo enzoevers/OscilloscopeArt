@@ -1,5 +1,3 @@
-// https://ww1.microchip.com/downloads/en/DeviceDoc/ATmega48A-PA-88A-PA-168A-PA-328-P-DS-DS40002061B.pdf
-
 //--------------------
 // System libraries
 //--------------------
@@ -139,7 +137,7 @@ void circleStatic()
 {
   for (float d = 0; d < 360; d++)
   {
-    addSample(vector2{0.5 + (0.4 * cos(d * degToRadFactor)), 0.5 + (0.4 * sin(d * degToRadFactor))});
+    addSample(vector2{0.5 + (0.4 * cos(d * DEG_TO_RAD )), 0.5 + (0.4 * sin(d * DEG_TO_RAD ))});
     delay(1);
   }
 }
@@ -150,7 +148,7 @@ void circleRotateInX()
   {
     for (float d = 0; d < 360; d += 6)
     {
-      addSample(vector2{0.5 + (0.45 * cos(d * degToRadFactor)), 0.5 + (cos(r * degToRadFactor) * 0.4 * sin(d * degToRadFactor))});
+      addSample(vector2{0.5 + (0.45 * cos(d * DEG_TO_RAD )), 0.5 + (cos(r * DEG_TO_RAD ) * 0.4 * sin(d * DEG_TO_RAD ))});
     }
     //delayMicroseconds(1);
   }
@@ -162,7 +160,7 @@ void circleRotateInY()
   {
     for (float d = 0; d < 360; d += 6)
     {
-      addSample(vector2{0.5 + (cos(r * degToRadFactor) * 0.4 * cos(d * degToRadFactor)), 0.5 + (0.4 * sin(d * degToRadFactor))});
+      addSample(vector2{0.5 + (cos(r * DEG_TO_RAD ) * 0.4 * cos(d * DEG_TO_RAD )), 0.5 + (0.4 * sin(d * DEG_TO_RAD ))});
     }
     //delayMicroseconds(1);
   }
@@ -174,7 +172,7 @@ void circleRotateInXY()
   {
     for (float d = 0; d < 360; d += 4)
     {
-      addSample(vector2{0.5 + (0.4 * cos(d * degToRadFactor)), 0.5 + (0.4 * sin((d + r)*degToRadFactor))});
+      addSample(vector2{0.5 + (0.4 * cos(d * DEG_TO_RAD )), 0.5 + (0.4 * sin((d + r)*DEG_TO_RAD ))});
     }
     delayMicroseconds(10);
   }
@@ -247,9 +245,12 @@ void pulsingSquare()
 
 float pitchCos(uint32_t frequency, int32_t degree, float amplitude, float phase)
 {
-  return 0.5 + (0.5 * (amplitude * cos(frequency * (((((float)degree / 1000) / frequency) - phase) * degToRadFactor))));
+  return 0.5 + (0.5 * (amplitude * cos(frequency * (((((float)degree / 1000) / frequency) - phase) * DEG_TO_RAD ))));
 }
 
+// https://stackoverflow.com/questions/13466623/how-to-look-up-sine-of-different-frequencies-from-a-fixed-sized-lookup-table
+// CORDIC: file:///C:/Users/enzoe/OneDrive/NewStructure/Other/PDF/School/TUE_Master/5LIK0/5lik0_all_slides_per4.pdf#page=64
+//         https://zipcpu.com/dsp/2017/08/30/cordic.html
 bool playTonesOnePeriod(uint32_t fs, ToneData* tones, uint8_t toneCount)
 {
   uint32_t gcdFrequencies = tones[0].frequency;
@@ -259,11 +260,11 @@ bool playTonesOnePeriod(uint32_t fs, ToneData* tones, uint8_t toneCount)
     gcdFrequencies = gcd(gcdFrequencies, tones[i].frequency);
   }
 
-  Serial.println(gcdFrequencies);
+  //Serial.println(gcdFrequencies);
   //Serial.println();
 
   const uint32_t sampleCount = ceil((double)fs / gcdFrequencies);
-  Serial.println(sampleCount);
+  //Serial.println(sampleCount);
 
   if (sampleCount > (uint32_t)RT_bufferSize)
   {
@@ -272,6 +273,7 @@ bool playTonesOnePeriod(uint32_t fs, ToneData* tones, uint8_t toneCount)
 
   float combinedTone = 0;
 
+  delayMicroseconds(10);
   disableOutput();
   clearOutputBuffer();
   for (uint32_t s = 0; s < sampleCount; s++)
@@ -279,17 +281,17 @@ bool playTonesOnePeriod(uint32_t fs, ToneData* tones, uint8_t toneCount)
     combinedTone = 0;
     for (uint8_t i = 0; i < toneCount; i++)
     {
-      double period = 1.0 / fs;
-      double frequencyRadians = 2.0 * M_PI * (float)tones[i].frequency;
-      double newTone = 0.5 + (0.5 * tones[i].amplitude * cos(frequencyRadians * period * s - (tones[i].phase * degToRadFactor)));
+      const double period = 1.0 / fs;
+      const double frequencyRadians = TWO_PI  * (float)tones[i].frequency;
+      double newTone = 0.5 + (0.5 * tones[i].amplitude * cos(frequencyRadians * period * s - (tones[i].phase * DEG_TO_RAD)));
       combinedTone += newTone;
-      Serial.println(newTone);
-      Serial.println(combinedTone);
-      Serial.println();
+      //Serial.println(newTone);
+      //Serial.println(combinedTone);
+      //Serial.println();
     }
     combinedTone /= toneCount;
-    Serial.println(combinedTone);
-    Serial.println();
+    //Serial.println(combinedTone);
+    //Serial.println();
 
     if (combinedTone > 1)
     {
@@ -387,8 +389,8 @@ vector3 rotateVector(vector3 vIn, vector3 vRot, float angleDeg)
   //      + 2.0f * s * cross(u, v);
 
   const float halfAngle = angleDeg / 2;
-  const float cosHalfAngle = cos(halfAngle * degToRadFactor);
-  const float sinHalfAngle = sin(halfAngle * degToRadFactor);
+  const float cosHalfAngle = cos(halfAngle * DEG_TO_RAD );
+  const float sinHalfAngle = sin(halfAngle * DEG_TO_RAD );
 
   vector3 rotationVector =
   {

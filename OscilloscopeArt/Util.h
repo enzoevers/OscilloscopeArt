@@ -13,7 +13,7 @@
 #define SET |=
 #define UNSET &= ~
 #define ARRAYLENGTH(x)  (sizeof(x) / sizeof((x)[0]))
-#define degToRadFactor M_PI / 180
+//#define degToRadFactor M_PI / 180
 
 //--------------------
 // Functions
