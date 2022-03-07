@@ -5,10 +5,8 @@ In the video below the oscilloscope is set into XY mode.
 - The analog output from the the DACs is connected to two oscilloscope probes.
 - The same analog output is connected in parallel to the left and right channel of a 3.5mm jack which goes to a speaker.
 
-If the video does not work it can be found here: https://youtu.be/2zvHPsyfSb4.
+click on the image below to see a demo (https://youtu.be/2zvHPsyfSb4).
 
-<figure class="video_container">
-  <iframe src="https://www.youtube.com/embed/2zvHPsyfSb4" frameborder="0" allowfullscreen="true"> </iframe>
-</figure>
-
-<img src="./ImgVid/InitialSetup.jpg" width=70%>
+<a href="https://youtu.be/2zvHPsyfSb4"> 
+    <img src="./ImgVid/InitialSetup.jpg" width=70%>
+</a>
